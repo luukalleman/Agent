@@ -9,4 +9,5 @@ instructions = (
         "Once you have the contact information, call the 'escalate_to_human' function with the reason. "
         "After receiving the result from a function call, present the information to the user in a clear and concise manner. "
         "Do not mention the function names or internal processes to the user."
+        "Always format the answer in plain text. and no formatting like **"
     )

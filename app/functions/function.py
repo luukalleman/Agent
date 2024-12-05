@@ -1,8 +1,8 @@
 # function.py
+
 import json
 import os
 from data.input.data import df_orders
-
 
 class Function:
     def __init__(self, func, name, description, parameters):
@@ -11,14 +11,18 @@ class Function:
         self.description = description
         self.parameters = parameters
 
-    def execute(self, **kwargs):
-        """Execute the encapsulated function with provided arguments."""
-        return self.func(**kwargs)
-    
-def get_order_status(order_number):
+    def execute(self, args, context):
+        """Execute the encapsulated function with provided arguments and context."""
+        return self.func(args=args, context=context)
+
+def get_order_status(args, context):
     """
     Retrieve the current status of an order given its order number.
     """
+    order_number = args.get('order_number')
+    if not order_number:
+        return "Order number is missing."
+
     order_number = str(order_number)
     status = df_orders.loc[df_orders['order_number'] == order_number, 'status']
     if not status.empty:
@@ -26,10 +30,14 @@ def get_order_status(order_number):
     else:
         return f"Order number {order_number} not found."
 
-def get_estimated_delivery_date(order_number):
+def get_estimated_delivery_date(args, context):
     """
     Provide the estimated delivery date for an order given its order number.
     """
+    order_number = args.get('order_number')
+    if not order_number:
+        return "Order number is missing."
+
     order_number = str(order_number)
     delivery_date = df_orders.loc[df_orders['order_number'] == order_number, 'estimated_delivery']
     if not delivery_date.empty:
@@ -37,31 +45,52 @@ def get_estimated_delivery_date(order_number):
     else:
         return f"Order number {order_number} not found."
 
-def escalate_to_human(reason, thread_id, contact_info):
+def escalate_to_human(args, context):
     """
     Escalate the conversation to a human by saving the thread ID, reason, and contact info to a JSON file.
+    Ensures the directory and file exist, and creates them if necessary.
     """
+    reason = args.get('reason')
+    contact_info = args.get('contact_info')
+    thread_id = context.get('thread_id')
+
+    if not reason or not contact_info:
+        return "Reason and contact information are required to escalate."
+
+    # Define the absolute file path
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, '../data/output/escalations.json')
+    directory = os.path.dirname(file_path)
+
+    # Ensure the directory exists
+    os.makedirs(directory, exist_ok=True)
+
+    # Initialize escalations list
+    escalations = []
+
+    # Check if the file exists and load existing data
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, 'r') as f:
+                escalations = json.load(f)
+                if not isinstance(escalations, list):
+                    raise ValueError("Invalid data format in JSON file")
+        except (json.JSONDecodeError, ValueError):
+            # Handle invalid JSON or format by resetting to an empty list
+            escalations = []
+
+    # Create the escalation entry
     escalation_data = {
         'thread_id': thread_id,
         'reason': reason,
         'contact_info': contact_info
     }
-    
-    # Check if file exists and load or initialize the data
-    if os.path.exists('data/output/escalations.json'):
-        with open('escalations.json', 'r') as f:
-            try:
-                escalations = json.load(f)
-            except json.JSONDecodeError:
-                escalations = []  # If file exists but is empty or invalid
-    else:
-        escalations = []
 
     # Append the new escalation
     escalations.append(escalation_data)
 
     # Write the updated list back to the file
-    with open('data/output/escalations.json', 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(escalations, f, indent=4)
 
     return "Thank you. I've escalated your request to a human representative, and they will contact you shortly."
@@ -117,7 +146,7 @@ escalate_to_human_function = Function(
             },
             "contact_info": {
                 "type": "string",
-                "description": "The contact_info of the person that wants to speak with a human."
+                "description": "The contact information of the person that wants to speak with a human."
             }
         },
         "required": ["reason", "contact_info"],

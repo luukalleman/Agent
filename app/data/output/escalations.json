@@ -1,0 +1,22 @@
+[
+    {
+        "thread_id": "thread_30dBFWyhmFtA9uJ03NyWFEJo",
+        "reason": "User prefers to speak with a human representative.",
+        "contact_info": "hi@everyman.ai"
+    },
+    {
+        "thread_id": "thread_aw8I0hZTD8WO7bFG5g5wRgRz",
+        "reason": "User is experiencing a problem with the delivery date of their order and needs human assistance.",
+        "contact_info": "luuk@alleman.ai"
+    },
+    {
+        "thread_id": "thread_aw8I0hZTD8WO7bFG5g5wRgRz",
+        "reason": "User's order has been shipped but not received, and they need further assistance.",
+        "contact_info": "luuk@alleman.com"
+    },
+    {
+        "thread_id": "thread_aw8I0hZTD8WO7bFG5g5wRgRz",
+        "reason": "User received a broken product and needs assistance with the return process.",
+        "contact_info": "luuk@alleman.everyman"
+    }
+]
